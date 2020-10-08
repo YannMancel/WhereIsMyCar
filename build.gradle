@@ -1,0 +1,43 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext {
+        versions = [
+                gradle: "4.0.1",
+                kotlin: "1.4.10",
+                material_design: "1.2.0",
+                navigation: "2.3.0"
+        ]
+
+        libs = [
+                // Material design
+                material_design: "com.google.android.material:material:${versions.material_design}",
+
+                // Navigation Component
+                navigation_fragment: "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
+                navigation_ui: "androidx.navigation:navigation-ui-ktx:${versions.navigation}",
+        ]
+    }
+
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:${versions.gradle}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:${versions.navigation}"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
