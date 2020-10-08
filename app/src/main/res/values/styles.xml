@@ -9,4 +9,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- *********************************** FloatingActionButton ****************************** -->
+
+    <!-- FloatingActionButton style -->
+    <style name="FloatingActionButtonStyle" parent="@style/Widget.MaterialComponents.FloatingActionButton">
+        <item name="backgroundTint">@color/colorPrimaryDark</item>
+        <item name="tint">@android:color/white</item>
+    </style>
+
 </resources>

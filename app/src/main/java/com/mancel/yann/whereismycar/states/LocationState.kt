@@ -1,5 +1,6 @@
 package com.mancel.yann.whereismycar.states
 
+import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.views.fragments.MapFragment
 
 /**
@@ -16,7 +17,7 @@ sealed class LocationState {
      * Where:  [MapFragment.updateUIWithLocationEvents]
      * Why:    Location is a success
      */
-    class Success(val _location: String) : LocationState()
+    class Success(val _location: Location) : LocationState()
 
     /**
      * State:  Failure

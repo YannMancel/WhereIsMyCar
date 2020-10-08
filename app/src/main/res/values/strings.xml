@@ -3,7 +3,11 @@
 
     <string name="app_name" translatable="false">WhereIsMyCar</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- MapFragment.kt -->
+    <string name="no_permission">No permission</string>
+    <string name="unknown_error">Unknown error</string>
+
+    <!-- LocationLiveData.kt -->
+    <string name="location_no_available">Location no available</string>
 
 </resources>

@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<!-- CoordinatorLayout -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:id="@+id/fragment_map_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".views.fragments.MapFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- TextView: Label -->
     <TextView
+        android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:textAlignment="center"
+        tools:text="Label"/>
 
-</FrameLayout>
+    <!-- FloatingActionButton -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fragment_map_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_normal"
+        android:src="@drawable/ic_gps_fixed"
+        app:layout_anchor="@id/text"
+        app:layout_anchorGravity="bottom|end"
+        style="@style/FloatingActionButtonStyle"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

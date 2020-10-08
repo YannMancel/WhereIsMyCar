@@ -13,6 +13,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // API Keys in GRADLE_USER_HOME directory
+        resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY___WHERE_IS_MY_CAR") ?: "")
     }
 
     buildTypes {
@@ -49,6 +52,10 @@ dependencies {
     implementation libs.navigation_fragment
     implementation libs.navigation_ui
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Google Maps
+    implementation libs.google_maps_location
+    implementation libs.google_maps_map
 
     // TESTS ---------------------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
 package com.mancel.yann.whereismycar.viewModels
 
+import android.content.Context
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.mancel.yann.whereismycar.liveDatas.LocationLiveData
 import com.mancel.yann.whereismycar.states.LocationState
-import java.lang.Exception
 
 /**
  * Created by Yann MANCEL on 08/10/2020.
@@ -17,19 +17,16 @@ class SharedViewModel :  ViewModel() {
 
     // FIELDS --------------------------------------------------------------------------------------
 
-    private val _locationState = MutableLiveData<LocationState>()
+    private var _locationState: LocationLiveData? = null
 
     // METHODS -------------------------------------------------------------------------------------
 
     // -- LocationState --
 
-    fun getLocationState() : LiveData<LocationState> = this._locationState
-
-    private fun changeLocationStateToSuccess(location: String) {
-        this._locationState.value = LocationState.Success(location)
+    fun getLocationState(context: Context) : LiveData<LocationState> {
+        if (this._locationState == null)  this._locationState = LocationLiveData(context)
+        return this._locationState as LiveData<LocationState>
     }
 
-    private fun changeLocationStateToFailure(exception: Exception) {
-        this._locationState.value = LocationState.Failure(exception)
-    }
+    fun requestUpdateLocationAfterPermission() = this._locationState?.requestUpdateLocation()
 }

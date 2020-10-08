@@ -6,7 +6,8 @@ buildscript {
                 gradle: "4.0.1",
                 kotlin: "1.4.10",
                 material_design: "1.2.0",
-                navigation: "2.3.0"
+                navigation: "2.3.0",
+                google_maps: "17.0.0"
         ]
 
         libs = [
@@ -16,6 +17,10 @@ buildscript {
                 // Navigation Component
                 navigation_fragment: "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
                 navigation_ui: "androidx.navigation:navigation-ui-ktx:${versions.navigation}",
+
+                // Google Maps
+                google_maps_location: "com.google.android.gms:play-services-location:${versions.google_maps}",
+                google_maps_map: "com.google.android.gms:play-services-maps:${versions.google_maps}"
         ]
     }
 
