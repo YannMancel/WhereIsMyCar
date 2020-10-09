@@ -11,6 +11,9 @@ buildscript {
         ]
 
         libs = [
+                // Kotlin
+                kotlin: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
+
                 // Material design
                 material_design: "com.google.android.material:material:${versions.material_design}",
 

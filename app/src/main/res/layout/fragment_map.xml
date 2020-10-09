@@ -11,13 +11,12 @@
     android:layout_height="match_parent"
     tools:context=".views.fragments.MapFragment">
 
-    <!-- TextView: Label -->
-    <TextView
-        android:id="@+id/text"
+    <!-- fragment: Google Maps -->
+    <fragment
+        android:id="@+id/fragment_map_support_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textAlignment="center"
-        tools:text="Label"/>
+        android:name="com.google.android.gms.maps.SupportMapFragment"/>
 
     <!-- FloatingActionButton -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -26,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_normal"
         android:src="@drawable/ic_gps_fixed"
-        app:layout_anchor="@id/text"
+        app:layout_anchor="@id/fragment_map_support_map"
         app:layout_anchorGravity="bottom|end"
         style="@style/FloatingActionButtonStyle"/>
 

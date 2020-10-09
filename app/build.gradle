@@ -41,9 +41,10 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
+    implementation libs.kotlin
 
     // Material design
     implementation libs.material_design
@@ -51,7 +52,6 @@ dependencies {
     // Navigation Component
     implementation libs.navigation_fragment
     implementation libs.navigation_ui
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Google Maps
     implementation libs.google_maps_location

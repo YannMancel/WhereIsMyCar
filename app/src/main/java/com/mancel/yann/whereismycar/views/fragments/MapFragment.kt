@@ -6,6 +6,12 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.PermissionHelper
 import com.mancel.yann.whereismycar.helpers.PermissionHelper.REQUEST_CODE_ACCESS_FINE_LOCATION
@@ -22,11 +28,12 @@ import kotlinx.android.synthetic.main.fragment_map.view.*
  *
  * A [BaseFragment] subclass.
  */
-class MapFragment : BaseFragment() {
+class MapFragment : BaseFragment(), OnMapReadyCallback {
 
     // FIELDS --------------------------------------------------------------------------------------
 
     private val _viewModel: SharedViewModel by activityViewModels()
+    private var _map: GoogleMap? = null
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -34,7 +41,10 @@ class MapFragment : BaseFragment() {
 
     override fun getFragmentLayout(): Int = R.layout.fragment_map
 
-    override fun doOnCreateView() = this.configureLocationEvents()
+    override fun doOnCreateView() {
+        this.configureMapFragmentOfGoogleMaps()
+        this.configureLocationEvents()
+    }
 
     // -- Fragment --
 
@@ -72,6 +82,39 @@ class MapFragment : BaseFragment() {
         }
     }
 
+    // -- OnMapReadyCallback interface --
+
+    override fun onMapReady(googleMap: GoogleMap?) {
+        this._map = googleMap
+
+        // Add a marker in Sydney and move the camera
+        val sydney = LatLng(-34.0, 151.0)
+        this._map?.addMarker(
+            MarkerOptions()
+            .position(sydney)
+            .title("Marker in Sydney"))
+        this._map?.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+    }
+
+    // -- MapFragment --
+
+    private fun configureMapFragmentOfGoogleMaps() {
+        var childFragment =
+            this.childFragmentManager
+                .findFragmentById(R.id.fragment_map_support_map) as? SupportMapFragment
+
+        if (childFragment == null) {
+            childFragment = SupportMapFragment.newInstance()
+
+            this.childFragmentManager.beginTransaction()
+                .add(R.id.fragment_map_support_map, childFragment)
+                .commit()
+        }
+
+        childFragment?.getMapAsync(this@MapFragment)
+    }
+
     // -- LiveData --
 
     private fun configureLocationEvents() {
@@ -95,8 +138,8 @@ class MapFragment : BaseFragment() {
 
     private fun handleLocationStateWithSuccess(state: LocationState.Success) {
         // todo - Success
-        val result = "latitude: ${state._location._latitude}"
-        this._rootView.text.text = result
+//        val result = "latitude: ${state._location._latitude}"
+//        this._rootView.text.text = result
     }
 
     private fun handleLocationStateWithFailure(state: LocationState.Failure) {
