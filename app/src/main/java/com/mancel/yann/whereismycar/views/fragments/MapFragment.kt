@@ -1,9 +1,13 @@
 package com.mancel.yann.whereismycar.views.fragments
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -11,12 +15,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mancel.yann.whereismycar.R
-import com.mancel.yann.whereismycar.helpers.PermissionHelper
-import com.mancel.yann.whereismycar.helpers.PermissionHelper.REQUEST_CODE_ACCESS_FINE_LOCATION
-import com.mancel.yann.whereismycar.helpers.PermissionHelper.REQUEST_CODE_CHECK_SETTINGS_TO_LOCATION
-import com.mancel.yann.whereismycar.helpers.showMessageWithSnackbar
+import com.mancel.yann.whereismycar.helpers.*
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 import kotlinx.android.synthetic.main.fragment_map.view.*
@@ -33,7 +35,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     // FIELDS --------------------------------------------------------------------------------------
 
     private val _viewModel: SharedViewModel by activityViewModels()
-    private var _map: GoogleMap? = null
+    private lateinit var _map: GoogleMap
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -41,10 +43,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun getFragmentLayout(): Int = R.layout.fragment_map
 
-    override fun doOnCreateView() {
-        this.configureMapFragmentOfGoogleMaps()
-        this.configureLocationEvents()
-    }
+    override fun doOnCreateView() = this.configureMapFragmentOfGoogleMaps()
 
     // -- Fragment --
 
@@ -58,9 +57,11 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
             REQUEST_CODE_ACCESS_FINE_LOCATION -> {
                 if (grantResults.isNotEmpty()
                     && grantResults.first() == PackageManager.PERMISSION_GRANTED) {
+                    this.enableUserLocation()
+
+                    // When user cancels location permission during the runtime
                     this._viewModel.requestUpdateLocationAfterPermission()
-                }
-                else {
+                } else {
                     showMessageWithSnackbar(
                         this._rootView.fragment_map_root,
                         this.getString(R.string.no_permission)
@@ -85,16 +86,8 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     // -- OnMapReadyCallback interface --
 
     override fun onMapReady(googleMap: GoogleMap?) {
-        this._map = googleMap
-
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        this._map?.addMarker(
-            MarkerOptions()
-            .position(sydney)
-            .title("Marker in Sydney"))
-        this._map?.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-
+        this._map = googleMap ?: return
+        this.enableUserLocation()
     }
 
     // -- MapFragment --
@@ -137,18 +130,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun handleLocationStateWithSuccess(state: LocationState.Success) {
-        // todo - Success
-//        val result = "latitude: ${state._location._latitude}"
-//        this._rootView.text.text = result
+        Log.d("LOCATION", "latitude: ${state._location._latitude} - longitude: ${state._location._longitude}")
     }
 
     private fun handleLocationStateWithFailure(state: LocationState.Failure) {
         when (val exception = state._exception) {
-
-            is SecurityException -> {
-                // Permission
-                PermissionHelper.requestAccessFineLocationPermission(this@MapFragment)
-            }
+            is SecurityException -> this.requestAccessFineLocationPermission()
 
             is ResolvableApiException -> {
                 // Location settings are not satisfied, but this can be fixed
@@ -171,6 +158,79 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
                     exception.message ?: this.getString(R.string.unknown_error)
                 )
             }
+        }
+    }
+
+    // -- Google Maps --
+
+    @SuppressLint("MissingPermission")
+    private fun enableUserLocation() {
+        if (!::_map.isInitialized) return
+
+        if (this.hasAccessFineLocationPermission()) {
+            this.configureLocationEvents()
+            this.configureGoogleMapStyle()
+
+            // Add a marker in Sydney and move the camera
+            val sydney = LatLng(-34.0, 151.0)
+            this._map.addMarker(
+                MarkerOptions()
+                    .position(sydney)
+                    .title("Marker in Sydney")
+            )
+            this._map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        } else {
+            this.requestAccessFineLocationPermission()
+        }
+    }
+
+    @RequiresPermission(anyOf = [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+    ])
+    private fun configureGoogleMapStyle() {
+        if (!::_map.isInitialized) return
+
+        with(this._map) {
+            // STYLE
+            try {
+                // Customise the styling of the base map using a JSON object defined
+                // in a raw resource file.
+                val isSuccess: Boolean =
+                    setMapStyle(
+                        MapStyleOptions.loadRawResourceStyle(
+                            this@MapFragment.requireContext(),
+                            R.raw.style_map_night
+                        )
+                    )
+
+                if (!isSuccess) {
+                    Log.e(this@MapFragment.javaClass.simpleName, "Style parsing failed.")
+                }
+            } catch (e: Resources.NotFoundException) {
+                Log.e(this@MapFragment.javaClass.simpleName, "Can't find style. Error: ", e)
+            }
+
+            // GESTURES
+            uiSettings?.isZoomGesturesEnabled = true
+            uiSettings?.isRotateGesturesEnabled = true
+
+            // SCROLL
+            uiSettings?.isScrollGesturesEnabled = true
+            uiSettings?.isScrollGesturesEnabledDuringRotateOrZoom = true
+
+            // MIN ZOOM LEVELS
+            setMinZoomPreference(if (minZoomLevel > 10.0F) minZoomLevel else 10.0F)
+
+            // MAX ZOOM LEVELS
+            setMaxZoomPreference(if (maxZoomLevel < 21.0F) maxZoomLevel else 21.0F)
+
+            // MY LOCATION
+            isMyLocationEnabled = true
+            uiSettings?.isMyLocationButtonEnabled = false
+
+            // TOOLBAR
+            uiSettings?.isMapToolbarEnabled = false
         }
     }
 }

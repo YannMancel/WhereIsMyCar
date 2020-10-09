@@ -1,5 +1,6 @@
 package com.mancel.yann.whereismycar.liveDatas
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Looper
 import androidx.lifecycle.LiveData
@@ -132,6 +133,7 @@ class LocationLiveData(context: Context) : LiveData<LocationState>() {
 
     // -- Location --
 
+    @SuppressLint("MissingPermission")
     private fun requestLastLocation() {
         // TASK: Task<android.location.Location>
         this._client
@@ -167,6 +169,7 @@ class LocationLiveData(context: Context) : LiveData<LocationState>() {
     }
 
     /** Requests the location to create the looper */
+    @SuppressLint("MissingPermission")
     private fun requestLocation() {
         this._client.requestLocationUpdates(
             this._request,
