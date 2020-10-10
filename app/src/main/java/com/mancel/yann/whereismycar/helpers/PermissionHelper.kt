@@ -20,7 +20,7 @@ private const val PERMISSION_ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_F
 
 // METHODS -----------------------------------------------------------------------------------------
 
-fun Fragment.hasAccessFineLocationPermission(): Boolean {
+fun Fragment.hasPermissionToAccessFineLocation(): Boolean {
     val permissionResult = ContextCompat.checkSelfPermission(
         this.requireContext(),
         PERMISSION_ACCESS_FINE_LOCATION
@@ -28,7 +28,7 @@ fun Fragment.hasAccessFineLocationPermission(): Boolean {
     return permissionResult == PackageManager.PERMISSION_GRANTED
 }
 
-fun Fragment.requestAccessFineLocationPermission() {
+fun Fragment.requestPermissionToAccessFineLocation() {
     this.requestPermissions(
         arrayOf(PERMISSION_ACCESS_FINE_LOCATION),
         REQUEST_CODE_ACCESS_FINE_LOCATION

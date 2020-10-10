@@ -14,11 +14,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.*
+import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 import kotlinx.android.synthetic.main.fragment_map.view.*
@@ -35,7 +36,15 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     // FIELDS --------------------------------------------------------------------------------------
 
     private val _viewModel: SharedViewModel by activityViewModels()
+
     private lateinit var _map: GoogleMap
+
+    private var _isLocatedOnUser: Boolean = true
+    private var _isFirstLocation: Boolean = true
+
+    companion object {
+        const val DEFAULT_ZOOM = 17F
+    }
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -130,12 +139,20 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun handleLocationStateWithSuccess(state: LocationState.Success) {
-        Log.d("LOCATION", "latitude: ${state._location._latitude} - longitude: ${state._location._longitude}")
+        // Focus on the current location of user
+        if (this._isLocatedOnUser) {
+            if (this._isFirstLocation) {
+                this.moveCameraOfGoogleMaps(state._location)
+                this._isFirstLocation = false
+            } else {
+                this.animateCameraOfGoogleMaps(state._location)
+            }
+        }
     }
 
     private fun handleLocationStateWithFailure(state: LocationState.Failure) {
         when (val exception = state._exception) {
-            is SecurityException -> this.requestAccessFineLocationPermission()
+            is SecurityException -> this.requestPermissionToAccessFineLocation()
 
             is ResolvableApiException -> {
                 // Location settings are not satisfied, but this can be fixed
@@ -167,20 +184,11 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     private fun enableUserLocation() {
         if (!::_map.isInitialized) return
 
-        if (this.hasAccessFineLocationPermission()) {
+        if (this.hasPermissionToAccessFineLocation()) {
             this.configureLocationEvents()
             this.configureGoogleMapStyle()
-
-            // Add a marker in Sydney and move the camera
-            val sydney = LatLng(-34.0, 151.0)
-            this._map.addMarker(
-                MarkerOptions()
-                    .position(sydney)
-                    .title("Marker in Sydney")
-            )
-            this._map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
         } else {
-            this.requestAccessFineLocationPermission()
+            this.requestPermissionToAccessFineLocation()
         }
     }
 
@@ -232,5 +240,31 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
             // TOOLBAR
             uiSettings?.isMapToolbarEnabled = false
         }
+    }
+
+    private fun moveCameraOfGoogleMaps(location: Location) {
+        if (!::_map.isInitialized) return
+
+        // Location
+        val target = LatLng(location._latitude, location._longitude)
+
+        // Camera
+        this._map.moveCamera(CameraUpdateFactory.newLatLngZoom(target, DEFAULT_ZOOM))
+    }
+
+    private fun animateCameraOfGoogleMaps(location: Location) {
+        if (!::_map.isInitialized) return
+
+        // Location
+        val target = LatLng(location._latitude, location._longitude)
+
+        // CameraPosition
+        val cameraPosition = CameraPosition.Builder()
+            .target(target)
+            .zoom(DEFAULT_ZOOM)
+            .build()
+
+        // Camera
+        this._map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 }
