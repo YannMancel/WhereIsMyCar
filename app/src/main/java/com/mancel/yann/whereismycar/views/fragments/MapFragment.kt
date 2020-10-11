@@ -29,15 +29,22 @@ import kotlinx.android.synthetic.main.fragment_map.view.*
  * Name of the project: WhereIsMyCar
  * Name of the package: com.mancel.yann.whereismycar.views.activities
  *
- * A [BaseFragment] subclass.
+ * A [BaseFragment] subclass which implements [OnMapReadyCallback] and
+ * [GoogleMap.OnCameraMoveStartedListener].
  */
-class MapFragment : BaseFragment(), OnMapReadyCallback {
+class MapFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveStartedListener {
+
+    // ENUMS ---------------------------------------------------------------------------------------
+
+    enum class MapStyle {STANDARD, SILVER, RETRO, DARK, NIGHT, AUBERGINE}
 
     // FIELDS --------------------------------------------------------------------------------------
 
     private val _viewModel: SharedViewModel by activityViewModels()
 
     private lateinit var _map: GoogleMap
+
+    private lateinit var _currentLocation: Location
 
     private var _isLocatedOnUser: Boolean = true
     private var _isFirstLocation: Boolean = true
@@ -52,7 +59,10 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun getFragmentLayout(): Int = R.layout.fragment_map
 
-    override fun doOnCreateView() = this.configureMapFragmentOfGoogleMaps()
+    override fun doOnCreateView() {
+        this.configureActionOfFAB()
+        this.configureMapFragmentOfGoogleMaps()
+    }
 
     // -- Fragment --
 
@@ -99,6 +109,56 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
         this.enableUserLocation()
     }
 
+    // -- GoogleMap.OnCameraMoveStartedListener interface --
+
+    override fun onCameraMoveStarted(reason: Int) {
+        when (reason) {
+            // The user gestured on the map (ex: Zoom or Rotation)
+            GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE -> {
+                if (!::_currentLocation.isInitialized) return
+
+                val latitudeOfCenter =
+                    this._map.projection?.visibleRegion?.latLngBounds?.center?.latitude
+
+                val longitudeOfCenter =
+                    this._map.projection?.visibleRegion?.latLngBounds?.center?.longitude
+
+                // Projection's Center (visible region) = current location of user
+                // (ex: zoom or rotation)
+                if (latitudeOfCenter != this._currentLocation._latitude &&
+                    longitudeOfCenter != this._currentLocation._longitude) {
+                    this._isLocatedOnUser = false
+                }
+            }
+
+            // The user tapped something on the map (ex: tap on marker)
+            GoogleMap.OnCameraMoveStartedListener.REASON_API_ANIMATION -> {
+                this._isLocatedOnUser = false
+            }
+
+            // The app moved the camera (ex: GoogleMap#moveCamera of GoogleMap#animateCamera)
+            GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION -> {
+                /* Ignore this reason */
+            }
+        }
+    }
+
+    // -- Action --
+
+    private fun configureActionOfFAB() {
+        this._rootView.fragment_map_fab.setOnClickListener {
+            if (!::_currentLocation.isInitialized) return@setOnClickListener
+
+            // Focusing on vision against the current position
+            if (!this._isLocatedOnUser) {
+                this.animateCameraOfGoogleMaps(this._currentLocation)
+
+                // Reset: Camera focus on user
+                this._isLocatedOnUser = true
+            }
+        }
+    }
+
     // -- MapFragment --
 
     private fun configureMapFragmentOfGoogleMaps() {
@@ -139,6 +199,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun handleLocationStateWithSuccess(state: LocationState.Success) {
+        // Location
+        this._currentLocation = state._location
+
         // Focus on the current location of user
         if (this._isLocatedOnUser) {
             if (this._isFirstLocation) {
@@ -186,9 +249,45 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
 
         if (this.hasPermissionToAccessFineLocation()) {
             this.configureLocationEvents()
-            this.configureGoogleMapStyle()
+            this.configureStyleOfGoogleMaps()
+            this.configureUiSettingsOfGoogleMaps()
+
+            // Listener Camera
+            this._map.setOnCameraMoveStartedListener(this@MapFragment)
         } else {
             this.requestPermissionToAccessFineLocation()
+        }
+    }
+
+    private fun configureStyleOfGoogleMaps(style: MapStyle = MapStyle.STANDARD) {
+        if (!::_map.isInitialized) return
+
+        val rawValue = when (style) {
+            MapStyle.STANDARD -> R.raw.style_map_standard
+            MapStyle.SILVER -> R.raw.style_map_silver
+            MapStyle.RETRO -> R.raw.style_map_retro
+            MapStyle.DARK -> R.raw.style_map_dark
+            MapStyle.NIGHT -> R.raw.style_map_night
+            MapStyle.AUBERGINE -> R.raw.style_map_aubergine
+        }
+
+        // STYLE
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val isSuccess: Boolean =
+                this._map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                        this@MapFragment.requireContext(),
+                        rawValue
+                    )
+                )
+
+            if (!isSuccess) {
+                Log.e(this@MapFragment.javaClass.simpleName, "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(this@MapFragment.javaClass.simpleName, "Can't find style. Error: ", e)
         }
     }
 
@@ -196,29 +295,10 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
     ])
-    private fun configureGoogleMapStyle() {
+    private fun configureUiSettingsOfGoogleMaps() {
         if (!::_map.isInitialized) return
 
         with(this._map) {
-            // STYLE
-            try {
-                // Customise the styling of the base map using a JSON object defined
-                // in a raw resource file.
-                val isSuccess: Boolean =
-                    setMapStyle(
-                        MapStyleOptions.loadRawResourceStyle(
-                            this@MapFragment.requireContext(),
-                            R.raw.style_map_night
-                        )
-                    )
-
-                if (!isSuccess) {
-                    Log.e(this@MapFragment.javaClass.simpleName, "Style parsing failed.")
-                }
-            } catch (e: Resources.NotFoundException) {
-                Log.e(this@MapFragment.javaClass.simpleName, "Can't find style. Error: ", e)
-            }
-
             // GESTURES
             uiSettings?.isZoomGesturesEnabled = true
             uiSettings?.isRotateGesturesEnabled = true
@@ -233,7 +313,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback {
             // MAX ZOOM LEVELS
             setMaxZoomPreference(if (maxZoomLevel < 21.0F) maxZoomLevel else 21.0F)
 
-            // MY LOCATION
+            // MY LOCATION (Require permission)
             isMyLocationEnabled = true
             uiSettings?.isMyLocationButtonEnabled = false
 
