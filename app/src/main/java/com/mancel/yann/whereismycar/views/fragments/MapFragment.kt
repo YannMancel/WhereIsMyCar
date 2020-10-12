@@ -14,25 +14,26 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.*
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.*
 import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 import kotlinx.android.synthetic.main.fragment_map.view.*
+import java.lang.IllegalArgumentException
 
 /**
  * Created by Yann MANCEL on 08/10/2020.
  * Name of the project: WhereIsMyCar
  * Name of the package: com.mancel.yann.whereismycar.views.activities
  *
- * A [BaseFragment] subclass which implements [OnMapReadyCallback] and
- * [GoogleMap.OnCameraMoveStartedListener].
+ * A [BaseFragment] subclass which implements [OnMapReadyCallback],
+ * [GoogleMap.OnCameraMoveStartedListener] and [GoogleMap.OnMapClickListener].
  */
-class MapFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveStartedListener {
+class MapFragment : BaseFragment(), OnMapReadyCallback,
+                                    GoogleMap.OnCameraMoveStartedListener,
+                                    GoogleMap.OnMapClickListener {
 
     // ENUMS ---------------------------------------------------------------------------------------
 
@@ -141,6 +142,28 @@ class MapFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveSt
                 /* Ignore this reason */
             }
         }
+    }
+
+    // -- GoogleMap.OnMapClickListener interface --
+
+    override fun onMapClick(pointOfMap: LatLng?) {
+        if (!::_map.isInitialized || pointOfMap == null) return
+
+        val bitmap =
+            try {
+                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
+            } catch (e: IllegalArgumentException) {
+                return
+            }
+
+        // MarkerOptions
+        val marker =
+            MarkerOptions()
+                .position(pointOfMap)
+                .draggable(true)
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+
+        this._map.addMarker(marker)
     }
 
     // -- Action --
@@ -252,8 +275,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveSt
             this.configureStyleOfGoogleMaps()
             this.configureUiSettingsOfGoogleMaps()
 
-            // Listener Camera
+            // Listeners
             this._map.setOnCameraMoveStartedListener(this@MapFragment)
+            this._map.setOnMapClickListener(this@MapFragment)
         } else {
             this.requestPermissionToAccessFineLocation()
         }

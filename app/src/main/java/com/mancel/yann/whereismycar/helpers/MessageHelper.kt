@@ -9,6 +9,8 @@ import com.google.android.material.snackbar.Snackbar
  * Name of the package: com.mancel.yann.whereismycar.helpers
  */
 
+// METHODS -----------------------------------------------------------------------------------------
+
 fun showMessageWithSnackbar(
     view: View,
     message: String,
