@@ -29,11 +29,14 @@ import java.lang.IllegalArgumentException
  * Name of the package: com.mancel.yann.whereismycar.views.activities
  *
  * A [BaseFragment] subclass which implements [OnMapReadyCallback],
- * [GoogleMap.OnCameraMoveStartedListener] and [GoogleMap.OnMapClickListener].
+ * [GoogleMap.OnCameraMoveStartedListener], [GoogleMap.OnMapClickListener],
+ * [GoogleMap.OnMarkerClickListener] and [GoogleMap.OnMarkerDragListener].
  */
 class MapFragment : BaseFragment(), OnMapReadyCallback,
                                     GoogleMap.OnCameraMoveStartedListener,
-                                    GoogleMap.OnMapClickListener {
+                                    GoogleMap.OnMapClickListener,
+                                    GoogleMap.OnMarkerClickListener,
+                                    GoogleMap.OnMarkerDragListener {
 
     // ENUMS ---------------------------------------------------------------------------------------
 
@@ -166,6 +169,22 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         this._map.addMarker(marker)
     }
 
+    // -- GoogleMap.OnMarkerClickListener interface --
+
+    override fun onMarkerClick(marker: Marker?): Boolean {
+        return false
+    }
+
+    // -- GoogleMap.OnMarkerDragListener interface --
+
+    override fun onMarkerDragStart(marker: Marker?) { /* Do nothing here */ }
+
+    override fun onMarkerDrag(marker: Marker?) { /* Do nothing here */ }
+
+    override fun onMarkerDragEnd(marker: Marker?) {
+        // todo - Marker.getPosition()
+    }
+
     // -- Action --
 
     private fun configureActionOfFAB() {
@@ -202,6 +221,10 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     // -- LiveData --
 
+    @RequiresPermission(anyOf = [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+    ])
     private fun configureLocationEvents() {
         this._viewModel
             .getLocationState(this.requireContext())
@@ -274,10 +297,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             this.configureLocationEvents()
             this.configureStyleOfGoogleMaps()
             this.configureUiSettingsOfGoogleMaps()
-
-            // Listeners
-            this._map.setOnCameraMoveStartedListener(this@MapFragment)
-            this._map.setOnMapClickListener(this@MapFragment)
+            this.configureListenersOnGoogleMaps()
         } else {
             this.requestPermissionToAccessFineLocation()
         }
@@ -344,6 +364,15 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             // TOOLBAR
             uiSettings?.isMapToolbarEnabled = false
         }
+    }
+
+    private fun configureListenersOnGoogleMaps() {
+        if (!::_map.isInitialized) return
+
+        this._map.setOnCameraMoveStartedListener(this@MapFragment)
+        this._map.setOnMapClickListener(this@MapFragment)
+        this._map.setOnMarkerClickListener(this@MapFragment)
+        this._map.setOnMarkerDragListener(this@MapFragment)
     }
 
     private fun moveCameraOfGoogleMaps(location: Location) {
