@@ -5,12 +5,9 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -39,10 +36,6 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                                     GoogleMap.OnMarkerClickListener,
                                     GoogleMap.OnMarkerDragListener {
 
-    // ENUMS ---------------------------------------------------------------------------------------
-
-    enum class MapStyle {STANDARD, SILVER, RETRO, DARK, NIGHT, AUBERGINE}
-
     // FIELDS --------------------------------------------------------------------------------------
 
     private val _viewModel: SharedViewModel by activityViewModels()
@@ -52,10 +45,6 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     private var _isLocatedOnUser: Boolean = true
     private var _isFirstLocation: Boolean = true
-
-    companion object {
-        const val DEFAULT_ZOOM = 17F
-    }
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -180,11 +169,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     private fun configureActionOfFAB() {
         this._rootView.fragment_map_fab.setOnClickListener {
-            if (!::_currentLocation.isInitialized) return@setOnClickListener
+            if (!::_map.isInitialized || !::_currentLocation.isInitialized)
+                return@setOnClickListener
 
             // Focusing on vision against the current position
             if (!this._isLocatedOnUser) {
-                this.animateCameraOfGoogleMaps(this._currentLocation)
+                animateCameraOfGoogleMaps(this._map, this._currentLocation)
 
                 // Reset: Camera focus on user
                 this._isLocatedOnUser = true
@@ -246,16 +236,18 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     }
 
     private fun handleLocationStateWithSuccess(state: LocationState.Success) {
+        if (!::_map.isInitialized) return
+
         // Location
         this._currentLocation = state._location
 
         // Focus on the current location of user
         if (this._isLocatedOnUser) {
             if (this._isFirstLocation) {
-                this.moveCameraOfGoogleMaps(state._location)
+                moveCameraOfGoogleMaps(this._map, state._location)
                 this._isFirstLocation = false
             } else {
-                this.animateCameraOfGoogleMaps(state._location)
+                animateCameraOfGoogleMaps(this._map, state._location)
             }
         }
     }
@@ -297,74 +289,11 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (this.hasPermissionToAccessFineLocation()) {
             this.configureLocationEvents()
             this.configurePointsOfInterestEvents()
-            this.configureStyleOfGoogleMaps()
-            this.configureUiSettingsOfGoogleMaps()
+            configureStyleOfGoogleMaps(this._map, this@MapFragment)
+            configureUiSettingsOfGoogleMaps(this._map)
             this.configureListenersOnGoogleMaps()
         } else {
             this.requestPermissionToAccessFineLocation()
-        }
-    }
-
-    private fun configureStyleOfGoogleMaps(style: MapStyle = MapStyle.STANDARD) {
-        if (!::_map.isInitialized) return
-
-        val rawValue = when (style) {
-            MapStyle.STANDARD -> R.raw.style_map_standard
-            MapStyle.SILVER -> R.raw.style_map_silver
-            MapStyle.RETRO -> R.raw.style_map_retro
-            MapStyle.DARK -> R.raw.style_map_dark
-            MapStyle.NIGHT -> R.raw.style_map_night
-            MapStyle.AUBERGINE -> R.raw.style_map_aubergine
-        }
-
-        // STYLE
-        try {
-            // Customise the styling of the base map using a JSON object defined
-            // in a raw resource file.
-            val isSuccess: Boolean =
-                this._map.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                        this@MapFragment.requireContext(),
-                        rawValue
-                    )
-                )
-
-            if (!isSuccess) {
-                Log.e(this@MapFragment.javaClass.simpleName, "Style parsing failed.")
-            }
-        } catch (e: Resources.NotFoundException) {
-            Log.e(this@MapFragment.javaClass.simpleName, "Can't find style. Error: ", e)
-        }
-    }
-
-    @RequiresPermission(anyOf = [
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-    ])
-    private fun configureUiSettingsOfGoogleMaps() {
-        if (!::_map.isInitialized) return
-
-        with(this._map) {
-            // GESTURES
-            uiSettings?.isZoomGesturesEnabled = true
-            uiSettings?.isRotateGesturesEnabled = true
-
-            // SCROLL
-            uiSettings?.isScrollGesturesEnabled = true
-            uiSettings?.isScrollGesturesEnabledDuringRotateOrZoom = true
-
-            // MIN ZOOM LEVELS
-            setMinZoomPreference(if (minZoomLevel > 10.0F) minZoomLevel else 10.0F)
-
-            // MAX ZOOM LEVELS
-            setMaxZoomPreference(if (maxZoomLevel < 21.0F) maxZoomLevel else 21.0F)
-
-            // MY LOCATION (Require permission)
-            isMyLocationEnabled = true
-            uiSettings?.isMyLocationButtonEnabled = false
-
-            // TOOLBAR
-            uiSettings?.isMapToolbarEnabled = false
         }
     }
 
@@ -375,32 +304,6 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         this._map.setOnMapClickListener(this@MapFragment)
         this._map.setOnMarkerClickListener(this@MapFragment)
         this._map.setOnMarkerDragListener(this@MapFragment)
-    }
-
-    private fun moveCameraOfGoogleMaps(location: Location) {
-        if (!::_map.isInitialized) return
-
-        // Location
-        val target = LatLng(location._latitude, location._longitude)
-
-        // Camera
-        this._map.moveCamera(CameraUpdateFactory.newLatLngZoom(target, DEFAULT_ZOOM))
-    }
-
-    private fun animateCameraOfGoogleMaps(location: Location) {
-        if (!::_map.isInitialized) return
-
-        // Location
-        val target = LatLng(location._latitude, location._longitude)
-
-        // CameraPosition
-        val cameraPosition = CameraPosition.Builder()
-            .target(target)
-            .zoom(DEFAULT_ZOOM)
-            .build()
-
-        // Camera
-        this._map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
     // -- Point of interest --
