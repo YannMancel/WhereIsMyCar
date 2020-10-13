@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: "androidx.navigation.safeargs.kotlin"
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -52,6 +53,18 @@ dependencies {
     // Navigation Component
     implementation libs.navigation_fragment
     implementation libs.navigation_ui
+
+    // Room
+    implementation libs.room_runtime
+    implementation libs.room_ktx
+    kapt libs.room_compiler
+
+    // LiveData for Flow
+    implementation libs.livedata_ktx
+
+    // Kotlin Coroutines
+    implementation libs.coroutines_core
+    implementation libs.coroutines_android
 
     // Google Maps
     implementation libs.google_maps_location

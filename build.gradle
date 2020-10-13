@@ -7,6 +7,9 @@ buildscript {
                 kotlin: "1.4.10",
                 material_design: "1.2.0",
                 navigation: "2.3.0",
+                room: "2.2.5",
+                livedata_ktx: "2.2.0",
+                coroutines: "1.3.9",
                 google_maps: "17.0.0"
         ]
 
@@ -20,6 +23,18 @@ buildscript {
                 // Navigation Component
                 navigation_fragment: "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
                 navigation_ui: "androidx.navigation:navigation-ui-ktx:${versions.navigation}",
+
+                // Room
+                room_runtime: "androidx.room:room-runtime:${versions.room}",
+                room_ktx: "androidx.room:room-ktx:${versions.room}",
+                room_compiler: "androidx.room:room-compiler:${versions.room}",
+
+                // LiveData for Flow
+                livedata_ktx: "androidx.lifecycle:lifecycle-livedata-ktx:${versions.livedata_ktx}",
+
+                // Kotlin Coroutines
+                coroutines_core: "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutines}",
+                coroutines_android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}",
 
                 // Google Maps
                 google_maps_location: "com.google.android.gms:play-services-location:${versions.google_maps}",

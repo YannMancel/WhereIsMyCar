@@ -27,8 +27,11 @@
     * [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
     * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
     * [Navigation](https://developer.android.com/guide/navigation/)
+    * [Room](https://developer.android.com/topic/libraries/architecture/room)
+  * [KTX Extensions](https://developer.android.com/kotlin/ktx)
 * [Library Material Components](https://github.com/material-components/material-components-android)
-* [Google Maps](https://cloud.google.com/maps-platform/)
+* [Library Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+* [Library Google Maps](https://cloud.google.com/maps-platform/)
   * [Location](https://developer.android.com/training/location)
   * [Maps](https://developers.google.com/maps/documentation/android-sdk/intro)
 

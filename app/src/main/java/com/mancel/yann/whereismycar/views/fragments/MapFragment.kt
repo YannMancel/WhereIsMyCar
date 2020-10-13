@@ -13,6 +13,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.mancel.yann.whereismycar.R
+import com.mancel.yann.whereismycar.WhereIsMyCarApplication
 import com.mancel.yann.whereismycar.helpers.*
 import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.models.POI
@@ -38,7 +39,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     // FIELDS --------------------------------------------------------------------------------------
 
-    private val _viewModel: SharedViewModel by activityViewModels()
+    private val _viewModel: SharedViewModel by activityViewModels {
+        (this.requireActivity().application as WhereIsMyCarApplication)._viewModelFactory
+    }
 
     private lateinit var _map: GoogleMap
     private lateinit var _currentLocation: Location
