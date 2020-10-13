@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.*
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.*
 import com.mancel.yann.whereismycar.models.Location
+import com.mancel.yann.whereismycar.models.POI
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 import kotlinx.android.synthetic.main.fragment_map.view.*
@@ -47,7 +48,6 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     private val _viewModel: SharedViewModel by activityViewModels()
 
     private lateinit var _map: GoogleMap
-
     private lateinit var _currentLocation: Location
 
     private var _isLocatedOnUser: Boolean = true
@@ -152,28 +152,14 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     override fun onMapClick(pointOfMap: LatLng?) {
         if (!::_map.isInitialized || pointOfMap == null) return
 
-        val bitmap =
-            try {
-                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
-            } catch (e: IllegalArgumentException) {
-                return
-            }
-
-        // MarkerOptions
-        val marker =
-            MarkerOptions()
-                .position(pointOfMap)
-                .draggable(true)
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-
-        this._map.addMarker(marker)
+        this._viewModel.addPointOfInterest(
+            POI(_latitude = pointOfMap.latitude, _longitude = pointOfMap.longitude)
+        )
     }
 
     // -- GoogleMap.OnMarkerClickListener interface --
 
-    override fun onMarkerClick(marker: Marker?): Boolean {
-        return false
-    }
+    override fun onMarkerClick(marker: Marker?): Boolean = false
 
     // -- GoogleMap.OnMarkerDragListener interface --
 
@@ -182,7 +168,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     override fun onMarkerDrag(marker: Marker?) { /* Do nothing here */ }
 
     override fun onMarkerDragEnd(marker: Marker?) {
-        // todo - Marker.getPosition()
+        if (!::_map.isInitialized || marker == null) return
+
+        this._viewModel.updatePointOfInterest(
+            marker.tag as Long,
+            marker.position.latitude, marker.position.longitude
+        )
     }
 
     // -- Action --
@@ -231,6 +222,16 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             .observe(this.viewLifecycleOwner) { locationState ->
                 locationState?.let {
                     this.updateUIWithLocationEvents(it)
+                }
+            }
+    }
+
+    private fun configurePointsOfInterestEvents() {
+        this._viewModel
+            .getPointsOfInterest()
+            .observe(this.viewLifecycleOwner) { pointsOfInterest ->
+                pointsOfInterest?.let {
+                    this.updateUIWithPointsOfInterestEvents(it)
                 }
             }
     }
@@ -295,6 +296,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
         if (this.hasPermissionToAccessFineLocation()) {
             this.configureLocationEvents()
+            this.configurePointsOfInterestEvents()
             this.configureStyleOfGoogleMaps()
             this.configureUiSettingsOfGoogleMaps()
             this.configureListenersOnGoogleMaps()
@@ -399,5 +401,36 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
         // Camera
         this._map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+    }
+
+    // -- Point of interest --
+
+    private fun updateUIWithPointsOfInterestEvents(pointsOfInterest: List<POI>) {
+        if (!::_map.isInitialized) return
+
+        // Remove Markers
+        this._map.clear()
+
+        // todo - 12/10/2020 - Put in lazy if just on type of POI
+        val bitmap =
+            try {
+                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
+            } catch (e: IllegalArgumentException) {
+                return
+            }
+
+        pointsOfInterest.forEach { poi ->
+            // MarkerOptions
+            val marker =
+                MarkerOptions()
+                    .position(LatLng(poi._latitude, poi._longitude))
+                    .draggable(true)
+                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+
+            this._map.addMarker(marker).apply {
+                // To identify what is the marker that is dragged by user
+                tag = poi._id
+            }
+        }
     }
 }
