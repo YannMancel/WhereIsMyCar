@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
@@ -55,6 +54,8 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     private var _isLocatedOnUser: Boolean = true
     private var _isFirstLocation: Boolean = true
+
+    private var _checkedWayItem = 1
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -180,13 +181,27 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     // -- OnClickInfoWindowListener interface --
 
     override fun onClickOnWayButton(marker: Marker) {
-        Log.d("TEST", "WAY")
+        val singleItems = this.resources.getStringArray(R.array.way_item)
+        MaterialAlertDialogBuilder(this.requireContext())
+            .setTitle(R.string.title_way_dialog)
+            .setSingleChoiceItems(singleItems, this._checkedWayItem) { _, position ->
+                this._checkedWayItem = position
+            }
+            .setNegativeButton(resources.getString(R.string.cancel), null)
+            .setPositiveButton(resources.getString(R.string.accept)) { _, _ ->
+                // Remove event of MapWrapperLayout (InfoWindow)
+                this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
 
-        // Remove event of MapWrapperLayout (InfoWindow)
-        this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
+                // InfoWindow
+                marker.hideInfoWindow()
 
-        // InfoWindow
-        marker.hideInfoWindow()
+                // Log.d("TEST", "Position: ${this._checkedWayItem}")
+
+                // Way to POI
+                // val poi = marker.tag as POI
+                // todo - 15/10/2020 - Add request to Google Maps
+            }
+            .show()
     }
 
     override fun onClickOnDeleteButton(marker: Marker) {
