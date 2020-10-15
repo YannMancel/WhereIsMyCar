@@ -15,6 +15,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.WhereIsMyCarApplication
 import com.mancel.yann.whereismycar.helpers.*
@@ -171,7 +172,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (!::_map.isInitialized || marker == null) return
 
         this._viewModel.updatePointOfInterest(
-            marker.tag as Long,
+            (marker.tag as POI)._id,
             marker.position.latitude, marker.position.longitude
         )
     }
@@ -189,13 +190,22 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     }
 
     override fun onClickOnDeleteButton(marker: Marker) {
-        Log.d("TEST", "DELETE")
+        MaterialAlertDialogBuilder(this.requireContext())
+            .setTitle(R.string.title_delete_dialog)
+            .setMessage(this.getString(R.string.message_delete_dialog))
+            .setNegativeButton(resources.getString(R.string.cancel), null)
+            .setPositiveButton(resources.getString(R.string.accept)) { _, _ ->
+                // Remove event of MapWrapperLayout (InfoWindow)
+                this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
 
-        // Remove event of MapWrapperLayout (InfoWindow)
-        this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
+                // InfoWindow
+                marker.hideInfoWindow()
 
-        // InfoWindow
-        marker.hideInfoWindow()
+                // Delete POI
+                val poi = marker.tag as POI
+                this._viewModel.removePointOfInterest(poi)
+            }
+            .show()
     }
 
     // -- Action --
@@ -384,7 +394,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
             this._map.addMarker(marker).apply {
                 // To identify what is the marker that is dragged by user
-                tag = poi._id
+                tag = poi
             }
         }
     }

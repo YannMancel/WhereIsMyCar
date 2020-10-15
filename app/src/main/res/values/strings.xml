@@ -6,12 +6,16 @@
     <!-- MapFragment.kt -->
     <string name="no_permission">No permission</string>
     <string name="unknown_error">Unknown error</string>
+    <string name="title_delete_dialog">Delete</string>
+    <string name="message_delete_dialog">Are you sure to delete this marker?</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Accept</string>
 
     <!-- LocationLiveData.kt -->
     <string name="location_no_available">Location no available</string>
     <string name="way_button_name">Way</string>
 
-    <!--  -->
+    <!-- InfoWindowAdapter.kt -->
     <string name="latitude">Lat: %1$.6f</string>
     <string name="longitude">Lng: %1$.6f</string>
 
