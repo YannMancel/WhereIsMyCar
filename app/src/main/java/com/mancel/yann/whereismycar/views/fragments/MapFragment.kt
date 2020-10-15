@@ -195,11 +195,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 // InfoWindow
                 marker.hideInfoWindow()
 
-                // Log.d("TEST", "Position: ${this._checkedWayItem}")
-
                 // Way to POI
                 // val poi = marker.tag as POI
-                // todo - 15/10/2020 - Add request to Google Maps
+                // todo - 15/10/2020 - Add request to Google Maps with this._checkedWayItem
             }
             .show()
     }
@@ -219,6 +217,15 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 // Delete POI
                 val poi = marker.tag as POI
                 this._viewModel.removePointOfInterest(poi)
+
+                showMessageWithSnackbar(
+                    this._rootView.fragment_map_root,
+                    this.getString(R.string.message_delete_snackbar),
+                    this.getString(R.string.cancel)
+                ) {
+                    val newPoi = poi.copy(_id = 0L)
+                    this._viewModel.addPointOfInterest(newPoi)
+                }
             }
             .show()
     }
