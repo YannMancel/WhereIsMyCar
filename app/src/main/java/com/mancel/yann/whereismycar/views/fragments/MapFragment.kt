@@ -32,13 +32,13 @@ import kotlinx.android.synthetic.main.fragment_map.view.*
  * Name of the package: com.mancel.yann.whereismycar.views.activities
  *
  * A [BaseFragment] subclass which implements [OnMapReadyCallback],
- * [GoogleMap.OnCameraMoveStartedListener], [GoogleMap.OnMapClickListener],
+ * [GoogleMap.OnCameraMoveStartedListener], [GoogleMap.OnMapLongClickListener],
  * [GoogleMap.OnMarkerClickListener], [GoogleMap.OnMarkerDragListener] and
  * [OnClickInfoWindowListener].
  */
 class MapFragment : BaseFragment(), OnMapReadyCallback,
                                     GoogleMap.OnCameraMoveStartedListener,
-                                    GoogleMap.OnMapClickListener,
+                                    GoogleMap.OnMapLongClickListener,
                                     GoogleMap.OnMarkerClickListener,
                                     GoogleMap.OnMarkerDragListener,
                                     OnClickInfoWindowListener {
@@ -149,14 +149,21 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         }
     }
 
-    // -- GoogleMap.OnMapClickListener interface --
+    // -- GoogleMap.OnMapLongClickListener interface --
 
-    override fun onMapClick(pointOfMap: LatLng?) {
+    override fun onMapLongClick(pointOfMap: LatLng?) {
         if (!::_map.isInitialized || pointOfMap == null) return
 
-        this._viewModel.addPointOfInterest(
-            POI(_latitude = pointOfMap.latitude, _longitude = pointOfMap.longitude)
-        )
+        MaterialAlertDialogBuilder(this.requireContext())
+            .setTitle(R.string.title_marker_dialog)
+            .setSingleChoiceItems(R.array.marker_item, 0, null)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.accept) { _, _ ->
+                this._viewModel.addPointOfInterest(
+                    POI(_latitude = pointOfMap.latitude, _longitude = pointOfMap.longitude)
+                )
+            }
+            .show()
     }
 
     // -- GoogleMap.OnMarkerClickListener interface --
@@ -181,14 +188,13 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     // -- OnClickInfoWindowListener interface --
 
     override fun onClickOnWayButton(marker: Marker) {
-        val singleItems = this.resources.getStringArray(R.array.way_item)
         MaterialAlertDialogBuilder(this.requireContext())
             .setTitle(R.string.title_way_dialog)
-            .setSingleChoiceItems(singleItems, this._checkedWayItem) { _, position ->
+            .setSingleChoiceItems(R.array.way_item, this._checkedWayItem) { _, position ->
                 this._checkedWayItem = position
             }
-            .setNegativeButton(resources.getString(R.string.cancel), null)
-            .setPositiveButton(resources.getString(R.string.accept)) { _, _ ->
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.accept) { _, _ ->
                 // Remove event of MapWrapperLayout (InfoWindow)
                 this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
 
@@ -205,9 +211,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     override fun onClickOnDeleteButton(marker: Marker) {
         MaterialAlertDialogBuilder(this.requireContext())
             .setTitle(R.string.title_delete_dialog)
-            .setMessage(this.getString(R.string.message_delete_dialog))
-            .setNegativeButton(resources.getString(R.string.cancel), null)
-            .setPositiveButton(resources.getString(R.string.accept)) { _, _ ->
+            .setMessage(R.string.message_delete_dialog)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.accept) { _, _ ->
                 // Remove event of MapWrapperLayout (InfoWindow)
                 this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
 
@@ -368,7 +374,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (!::_map.isInitialized) return
 
         this._map.setOnCameraMoveStartedListener(this@MapFragment)
-        this._map.setOnMapClickListener(this@MapFragment)
+        this._map.setOnMapLongClickListener(this@MapFragment)
 
         // Marker
         this._map.setOnMarkerClickListener(this@MapFragment)
@@ -413,6 +419,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                     .position(LatLng(poi._latitude, poi._longitude))
                     .draggable(true)
 //                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+//                    .anchor(0.5F, 0.5F)
 
             this._map.addMarker(marker).apply {
                 // To identify what is the marker that is dragged by user

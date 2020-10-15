@@ -8,15 +8,19 @@
     <string name="unknown_error">Unknown error</string>
     <string name="cancel">Cancel</string>
     <string name="accept">Accept</string>
+    <string name="title_marker_dialog">Marker</string>
     <string name="title_delete_dialog">Delete</string>
-    <string name="message_delete_dialog">Are you sure to delete this marker?</string>
-    <string name="message_delete_snackbar">Suppression marker</string>
     <string name="title_way_dialog">Way</string>
+    <string name="message_delete_dialog">Are you sure to delete this marker?</string>
+    <string name="message_delete_snackbar">Marker deleted</string>
     <string-array name="way_item">
         <item>Walking</item>
         <item>Car</item>
-        <item>Bus</item>
-        <item>Fly</item>
+        <item>rocket</item>
+    </string-array>
+    <string-array name="marker_item">
+        <item>Car</item>
+        <item>Zombie</item>
     </string-array>
 
     <!-- LocationLiveData.kt -->
