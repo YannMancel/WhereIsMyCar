@@ -3,6 +3,16 @@
 <resources>
 
     <!-- Margin -->
+    <dimen name="margin_little">8dp</dimen>
     <dimen name="margin_normal">16dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="padding_little">8dp</dimen>
+
+    <!-- ImageView -->
+    <dimen name="icon_marker_size">60dp</dimen>
+
+    <!-- TextView -->
+    <dimen name="location_width">150dp</dimen>
 
 </resources>

@@ -5,13 +5,16 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.WhereIsMyCarApplication
 import com.mancel.yann.whereismycar.helpers.*
@@ -19,8 +22,9 @@ import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.models.POI
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
+import com.mancel.yann.whereismycar.views.adapters.InfoWindowAdapter
+import com.mancel.yann.whereismycar.views.adapters.OnClickInfoWindowListener
 import kotlinx.android.synthetic.main.fragment_map.view.*
-import java.lang.IllegalArgumentException
 
 /**
  * Created by Yann MANCEL on 08/10/2020.
@@ -29,13 +33,15 @@ import java.lang.IllegalArgumentException
  *
  * A [BaseFragment] subclass which implements [OnMapReadyCallback],
  * [GoogleMap.OnCameraMoveStartedListener], [GoogleMap.OnMapClickListener],
- * [GoogleMap.OnMarkerClickListener] and [GoogleMap.OnMarkerDragListener].
+ * [GoogleMap.OnMarkerClickListener], [GoogleMap.OnMarkerDragListener] and
+ * [OnClickInfoWindowListener].
  */
 class MapFragment : BaseFragment(), OnMapReadyCallback,
                                     GoogleMap.OnCameraMoveStartedListener,
                                     GoogleMap.OnMapClickListener,
                                     GoogleMap.OnMarkerClickListener,
-                                    GoogleMap.OnMarkerDragListener {
+                                    GoogleMap.OnMarkerDragListener,
+                                    OnClickInfoWindowListener {
 
     // FIELDS --------------------------------------------------------------------------------------
 
@@ -71,7 +77,8 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             // Access to the current location
             REQUEST_CODE_ACCESS_FINE_LOCATION -> {
                 if (grantResults.isNotEmpty()
-                    && grantResults.first() == PackageManager.PERMISSION_GRANTED) {
+                    && grantResults.first() == PackageManager.PERMISSION_GRANTED
+                ) {
                     this.enableUserLocation()
 
                     // When user cancels location permission during the runtime
@@ -122,7 +129,8 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 // Projection's Center (visible region) = current location of user
                 // (ex: zoom or rotation)
                 if (latitudeOfCenter != this._currentLocation._latitude &&
-                    longitudeOfCenter != this._currentLocation._longitude) {
+                    longitudeOfCenter != this._currentLocation._longitude
+                ) {
                     this._isLocatedOnUser = false
                 }
             }
@@ -168,6 +176,28 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         )
     }
 
+    // -- OnClickInfoWindowListener interface --
+
+    override fun onClickOnWayButton(marker: Marker) {
+        Log.d("TEST", "WAY")
+
+        // Remove event of MapWrapperLayout (InfoWindow)
+        this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
+
+        // InfoWindow
+        marker.hideInfoWindow()
+    }
+
+    override fun onClickOnDeleteButton(marker: Marker) {
+        Log.d("TEST", "DELETE")
+
+        // Remove event of MapWrapperLayout (InfoWindow)
+        this._rootView.fragment_map_wrapper.clearMarkerWithInfoWindow()
+
+        // InfoWindow
+        marker.hideInfoWindow()
+    }
+
     // -- Action --
 
     private fun configureActionOfFAB() {
@@ -205,10 +235,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     // -- LiveData --
 
-    @RequiresPermission(anyOf = [
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-    ])
+    @RequiresPermission(
+        anyOf = [
+            "android.permission.ACCESS_COARSE_LOCATION",
+            "android.permission.ACCESS_FINE_LOCATION"
+        ]
+    )
     private fun configureLocationEvents() {
         this._viewModel
             .getLocationState(this.requireContext())
@@ -305,8 +337,25 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
         this._map.setOnCameraMoveStartedListener(this@MapFragment)
         this._map.setOnMapClickListener(this@MapFragment)
+
+        // Marker
         this._map.setOnMarkerClickListener(this@MapFragment)
         this._map.setOnMarkerDragListener(this@MapFragment)
+
+        // InfoWindow
+        // 39 - default marker height
+        // 20 - offset between the default InfoWindow bottom edge and it's content bottom edge
+        this._rootView.fragment_map_wrapper.init(
+            this._map,
+            getPixelsFromDp(this.requireContext(), 39.0F + 20.0F)
+        )
+        this._map.setInfoWindowAdapter(
+            InfoWindowAdapter(
+                this.requireContext(),
+                this._rootView.fragment_map_wrapper,
+                this@MapFragment
+            )
+        )
     }
 
     // -- Point of interest --
@@ -318,12 +367,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         this._map.clear()
 
         // todo - 12/10/2020 - Put in lazy if just on type of POI
-        val bitmap =
-            try {
-                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
-            } catch (e: IllegalArgumentException) {
-                return
-            }
+//        val bitmap =
+//            try {
+//                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
+//            } catch (e: IllegalArgumentException) {
+//                return
+//            }
 
         pointsOfInterest.forEach { poi ->
             // MarkerOptions
@@ -331,7 +380,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 MarkerOptions()
                     .position(LatLng(poi._latitude, poi._longitude))
                     .draggable(true)
-                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+//                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
 
             this._map.addMarker(marker).apply {
                 // To identify what is the marker that is dragged by user

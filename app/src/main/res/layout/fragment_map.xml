@@ -11,12 +11,24 @@
     android:layout_height="match_parent"
     tools:context=".views.fragments.MapFragment">
 
-    <!-- fragment: Google Maps -->
-    <fragment
-        android:id="@+id/fragment_map_support_map"
+    <!-- MapWrapperLayout: To receive the event of InfoWindow -->
+    <com.mancel.yann.whereismycar.widgets.MapWrapperLayout
+        android:id="@+id/fragment_map_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.SupportMapFragment"/>
+        android:layout_height="match_parent">
+
+        <!-- fragment: Google Maps -->
+        <fragment
+            android:id="@+id/fragment_map_support_map"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </com.mancel.yann.whereismycar.widgets.MapWrapperLayout>
 
     <!-- FloatingActionButton -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -25,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_normal"
         android:src="@drawable/ic_gps_fixed"
-        app:layout_anchor="@id/fragment_map_support_map"
+        app:layout_anchor="@id/fragment_map_wrapper"
         app:layout_anchorGravity="bottom|end"
         style="@style/FloatingActionButtonStyle"/>
 

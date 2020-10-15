@@ -9,5 +9,10 @@
 
     <!-- LocationLiveData.kt -->
     <string name="location_no_available">Location no available</string>
+    <string name="way_button_name">Way</string>
+
+    <!--  -->
+    <string name="latitude">Lat: %1$.6f</string>
+    <string name="longitude">Lng: %1$.6f</string>
 
 </resources>

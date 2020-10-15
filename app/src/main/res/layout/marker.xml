@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ConstraintLayout -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/padding_little">
+
+    <!-- ImageView: Icon -->
+    <ImageView
+        android:id="@+id/marker_icon"
+        android:layout_width="@dimen/icon_marker_size"
+        android:layout_height="0dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_car"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintDimensionRatio="1"/>
+
+    <!-- TextView: Latitude -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/marker_latitude"
+        android:layout_width="@dimen/location_width"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_little"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/marker_longitude"
+        app:layout_constraintStart_toEndOf="@id/marker_icon"
+        app:layout_constraintEnd_toStartOf="@id/marker_button_delete"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Lat: 42.564511" />
+
+    <!-- TextView: Longitude -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/marker_longitude"
+        android:layout_width="@dimen/location_width"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_little"
+        app:layout_constraintTop_toBottomOf="@id/marker_latitude"
+        app:layout_constraintBottom_toTopOf="@id/marker_button_way"
+        app:layout_constraintStart_toEndOf="@id/marker_icon"
+        app:layout_constraintEnd_toStartOf="@id/marker_button_delete"
+        tools:text="Lng: 15.497681" />
+
+    <!-- Button: Way of restaurant -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/marker_button_way"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_little"
+        android:text="@string/way_button_name"
+        app:layout_constraintTop_toBottomOf="@id/marker_longitude"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/marker_icon"
+        app:layout_constraintEnd_toStartOf="@id/marker_button_delete"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        style="@style/ButtonStyle"/>
+
+    <!-- ImageButton: Delete icon -->
+    <ImageButton
+        android:id="@+id/marker_button_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_delete"
+        android:tint="@color/colorPrimary"
+        android:background="@null"
+        android:contentDescription="@null"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

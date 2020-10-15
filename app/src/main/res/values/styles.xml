@@ -17,4 +17,11 @@
         <item name="tint">@android:color/white</item>
     </style>
 
+    <!-- *********************************** Button ******************************************** -->
+
+    <!-- Button style -->
+    <style name="ButtonStyle" parent="@style/Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorPrimaryDark</item>
+    </style>
+
 </resources>
