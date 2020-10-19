@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mancel.yann.whereismycar.databases.AppDatabase
+import com.mancel.yann.whereismycar.repositories.GoogleWayRepository
 import com.mancel.yann.whereismycar.repositories.RoomDatabaseRepository
 import java.lang.IllegalArgumentException
 
@@ -24,8 +25,9 @@ class ViewModelFactory(private val _context: Context) : ViewModelProvider.Factor
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SharedViewModel::class.java)) {
             val database = AppDatabase.getDatabase(this._context)
-            val repository = RoomDatabaseRepository(database.poiDAO())
-            return SharedViewModel(repository) as T
+            val databaseRepository = RoomDatabaseRepository(database.poiDAO())
+            val wayRepository = GoogleWayRepository()
+            return SharedViewModel(databaseRepository, wayRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
     }

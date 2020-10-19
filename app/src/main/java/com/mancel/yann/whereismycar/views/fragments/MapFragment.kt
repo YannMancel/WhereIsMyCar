@@ -202,8 +202,11 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 marker.hideInfoWindow()
 
                 // Way to POI
-                // val poi = marker.tag as POI
-                // todo - 15/10/2020 - Add request to Google Maps with this._checkedWayItem
+                val poi = marker.tag as POI
+                val singleItems = this.resources.getStringArray(R.array.way_item)
+                this._viewModel.buildWay(
+                    this._currentLocation, poi, singleItems[this._checkedWayItem]
+                )
             }
             .show()
     }

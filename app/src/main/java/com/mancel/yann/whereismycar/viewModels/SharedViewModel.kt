@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.lifecycle.*
 import com.mancel.yann.whereismycar.helpers.logCoroutineOnDebug
 import com.mancel.yann.whereismycar.liveDatas.LocationLiveData
+import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.models.POI
 import com.mancel.yann.whereismycar.repositories.DatabaseRepository
+import com.mancel.yann.whereismycar.repositories.WayRepository
 import com.mancel.yann.whereismycar.states.LocationState
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -19,6 +21,7 @@ import kotlin.coroutines.CoroutineContext
  */
 class SharedViewModel(
     private val _databaseRepository: DatabaseRepository,
+    private val _wayRepository: WayRepository,
     private val _backgroundDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :  ViewModel() {
 
@@ -93,4 +96,10 @@ class SharedViewModel(
             this@SharedViewModel.logCoroutineOnDebug("Launch started")
             this@SharedViewModel._databaseRepository.removePointsOfInterest(poi)
         }
+
+    // -- Way --
+
+    fun buildWay(currentLocation: Location, poi: POI, way: String) {
+        // todo - 15/10/202 - Request to Google Maps
+    }
 }

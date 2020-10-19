@@ -3,42 +3,52 @@
 buildscript {
     ext {
         versions = [
-                gradle: '4.0.2',
-                kotlin: "1.4.10",
-                material_design: "1.2.0",
-                navigation: "2.3.0",
-                room: "2.2.5",
-                livedata_ktx: "2.2.0",
-                coroutines: "1.3.9",
-                google_maps: "17.0.0"
+            gradle: '4.1.0',
+            kotlin: "1.4.10",
+            material_design: "1.2.0",
+            navigation: "2.3.0",
+            room: "2.2.5",
+            livedata_ktx: "2.2.0",
+            coroutines: "1.3.9",
+            google_maps: "17.0.0",
+            retrofit: "2.8.1",
+            moshi: "1.11.0"
         ]
 
         libs = [
-                // Kotlin
-                kotlin: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
+            // Kotlin
+            kotlin: "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
 
-                // Material design
-                material_design: "com.google.android.material:material:${versions.material_design}",
+            // Material design
+            material_design: "com.google.android.material:material:${versions.material_design}",
 
-                // Navigation Component
-                navigation_fragment: "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
-                navigation_ui: "androidx.navigation:navigation-ui-ktx:${versions.navigation}",
+            // Navigation Component
+            navigation_fragment: "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
+            navigation_ui: "androidx.navigation:navigation-ui-ktx:${versions.navigation}",
 
-                // Room
-                room_runtime: "androidx.room:room-runtime:${versions.room}",
-                room_ktx: "androidx.room:room-ktx:${versions.room}",
-                room_compiler: "androidx.room:room-compiler:${versions.room}",
+            // Room
+            room_runtime: "androidx.room:room-runtime:${versions.room}",
+            room_ktx: "androidx.room:room-ktx:${versions.room}",
+            room_compiler: "androidx.room:room-compiler:${versions.room}",
 
-                // LiveData for Flow
-                livedata_ktx: "androidx.lifecycle:lifecycle-livedata-ktx:${versions.livedata_ktx}",
+            // LiveData for Flow
+            livedata_ktx: "androidx.lifecycle:lifecycle-livedata-ktx:${versions.livedata_ktx}",
 
-                // Kotlin Coroutines
-                coroutines_core: "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutines}",
-                coroutines_android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}",
+            // Kotlin Coroutines
+            coroutines_core: "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutines}",
+            coroutines_android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}",
 
-                // Google Maps
-                google_maps_location: "com.google.android.gms:play-services-location:${versions.google_maps}",
-                google_maps_map: "com.google.android.gms:play-services-maps:${versions.google_maps}"
+            // Google Maps
+            google_maps_location: "com.google.android.gms:play-services-location:${versions.google_maps}",
+            google_maps_map: "com.google.android.gms:play-services-maps:${versions.google_maps}",
+
+            // Retrofit
+            retrofit: "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+            retrofit_converter_moshi: "com.squareup.retrofit2:converter-moshi:${versions.retrofit}",
+
+            // Moshi
+            moshi: "com.squareup.moshi:moshi-kotlin:${versions.moshi}",
+            moshi_codegen: "com.squareup.moshi:moshi-kotlin-codegen:${versions.moshi}"
         ]
     }
 

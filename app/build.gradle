@@ -70,6 +70,14 @@ dependencies {
     implementation libs.google_maps_location
     implementation libs.google_maps_map
 
+    // Retrofit
+    implementation libs.retrofit
+    implementation libs.retrofit_converter_moshi
+
+    // Moshi
+    implementation libs.moshi
+    kapt libs.moshi_codegen
+
     // TESTS ---------------------------------------------------------------------------------------
 
     testImplementation 'junit:junit:4.12'

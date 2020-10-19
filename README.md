@@ -34,6 +34,10 @@
 * [Library Google Maps](https://cloud.google.com/maps-platform/)
   * [Location](https://developer.android.com/training/location)
   * [Maps](https://developers.google.com/maps/documentation/android-sdk/intro)
+  * [Directions](https://developers.google.com/maps/documentation/directions/overview)
+* [Library Retrofit](https://github.com/square/retrofit)
+  * [Converter Moshi](https://github.com/square/retrofit/tree/master/retrofit-converters/moshi)
+* [Library Moshi](https://github.com/square/moshi)
 
 
 ## Troubleshooting
