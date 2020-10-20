@@ -2,13 +2,14 @@ package com.mancel.yann.whereismycar.viewModels
 
 import android.content.Context
 import androidx.lifecycle.*
+import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.logCoroutineOnDebug
 import com.mancel.yann.whereismycar.liveDatas.LocationLiveData
-import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.models.POI
 import com.mancel.yann.whereismycar.repositories.DatabaseRepository
 import com.mancel.yann.whereismycar.repositories.WayRepository
 import com.mancel.yann.whereismycar.states.LocationState
+import com.mancel.yann.whereismycar.states.WayState
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -20,6 +21,7 @@ import kotlin.coroutines.CoroutineContext
  * A [ViewModel] subclass.
  */
 class SharedViewModel(
+    private val _context: Context,
     private val _databaseRepository: DatabaseRepository,
     private val _wayRepository: WayRepository,
     private val _backgroundDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -27,11 +29,21 @@ class SharedViewModel(
 
     // FIELDS --------------------------------------------------------------------------------------
 
+    // -- LiveData --
+
     private var _locationState: LocationLiveData? = null
 
     private val _pointsOfInterest by lazy {
         this._databaseRepository.getPointsOfInterest().asLiveData()
     }
+
+    private var _wayState: MutableLiveData<WayState>? = null
+
+    // -- Key --
+
+    private val _googleMapsKey by lazy { this._context.getString(R.string.google_maps_key) }
+
+    // -- Error handler --
 
     private val _errorHandler = CoroutineExceptionHandler { _, throwable ->
         this.logCoroutineOnDebug(throwable.message)
@@ -41,6 +53,7 @@ class SharedViewModel(
         private const val COROUTINE_ADD_DATA = "Add data in database"
         private const val COROUTINE_UPDATE_DATA = "Update data in database"
         private const val COROUTINE_REMOVE_DATA = "Remove data in database"
+        private const val COROUTINE_WAY = "Way from Google Maps"
     }
 
     // METHODS -------------------------------------------------------------------------------------
@@ -52,8 +65,8 @@ class SharedViewModel(
 
     // -- LocationState --
 
-    fun getLocationState(context: Context) : LiveData<LocationState> {
-        if (this._locationState == null)  this._locationState = LocationLiveData(context)
+    fun getLocationState() : LiveData<LocationState> {
+        if (this._locationState == null)  this._locationState = LocationLiveData(this._context)
         return this._locationState!!
     }
 
@@ -69,6 +82,7 @@ class SharedViewModel(
         ) {
             this@SharedViewModel.logCoroutineOnDebug("Launch started")
             this@SharedViewModel._databaseRepository.insertPointsOfInterest(poi)
+            this@SharedViewModel.logCoroutineOnDebug("Launch finished")
         }
 
     fun updatePointOfInterest(id: Long, latitude: Double, longitude: Double) =
@@ -87,6 +101,7 @@ class SharedViewModel(
                 elementToUpdate.copy(_latitude = latitude, _longitude = longitude)
 
             this@SharedViewModel._databaseRepository.updatePointsOfInterest(elementAfterUpdate)
+            this@SharedViewModel.logCoroutineOnDebug("Launch finished")
         }
 
     fun removePointOfInterest(poi: POI) =
@@ -95,11 +110,33 @@ class SharedViewModel(
         ) {
             this@SharedViewModel.logCoroutineOnDebug("Launch started")
             this@SharedViewModel._databaseRepository.removePointsOfInterest(poi)
+            this@SharedViewModel.logCoroutineOnDebug("Launch finished")
         }
 
     // -- Way --
 
-    fun buildWay(currentLocation: Location, poi: POI, way: String) {
-        // todo - 15/10/202 - Request to Google Maps
+    fun getWayState(): LiveData<WayState> {
+        if (this._wayState == null) this._wayState = MutableLiveData()
+        return this._wayState!!
     }
+
+    fun buildWay(origin: String, destination: String, mode: String) =
+        this.viewModelScope.launch(
+            context = this.getCoroutineContext(name = COROUTINE_WAY)
+        ) {
+            this@SharedViewModel.logCoroutineOnDebug("Launch started")
+
+            if (this@SharedViewModel._wayState == null) {
+                this@SharedViewModel.logCoroutineOnDebug("Launch finished without request")
+                return@launch
+            }
+
+            val deferredWay = async {
+                this@SharedViewModel._wayRepository.getWay(
+                    origin, destination, mode, this@SharedViewModel._googleMapsKey
+                )
+            }
+            this@SharedViewModel._wayState?.postValue(deferredWay.await())
+            this@SharedViewModel.logCoroutineOnDebug("Launch finished")
+        }
 }

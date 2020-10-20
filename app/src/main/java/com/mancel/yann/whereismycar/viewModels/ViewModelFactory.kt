@@ -27,7 +27,7 @@ class ViewModelFactory(private val _context: Context) : ViewModelProvider.Factor
             val database = AppDatabase.getDatabase(this._context)
             val databaseRepository = RoomDatabaseRepository(database.poiDAO())
             val wayRepository = GoogleWayRepository()
-            return SharedViewModel(databaseRepository, wayRepository) as T
+            return SharedViewModel(this._context, databaseRepository, wayRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
     }

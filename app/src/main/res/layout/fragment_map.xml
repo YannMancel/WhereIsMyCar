@@ -30,15 +30,30 @@
 
     </com.mancel.yann.whereismycar.widgets.MapWrapperLayout>
 
-    <!-- FloatingActionButton -->
+    <!-- FloatingActionButton: Action to remove way  -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fragment_map_mini_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_mini_fab"
+        android:src="@drawable/ic_clear"
+        android:contentDescription="@null"
+        app:layout_anchor="@id/fragment_map_wrapper"
+        app:layout_anchorGravity="bottom|start"
+        app:fabSize="mini"
+        app:layout_dodgeInsetEdges="bottom"
+        style="@style/FloatingActionButtonStyle" />
+
+    <!-- FloatingActionButton: Action to center the user's location -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fragment_map_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_normal"
         android:src="@drawable/ic_gps_fixed"
+        android:contentDescription="@null"
         app:layout_anchor="@id/fragment_map_wrapper"
         app:layout_anchorGravity="bottom|end"
-        style="@style/FloatingActionButtonStyle"/>
+        style="@style/FloatingActionButtonStyle" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

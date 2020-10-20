@@ -5,6 +5,8 @@
     <!-- Margin -->
     <dimen name="margin_little">8dp</dimen>
     <dimen name="margin_normal">16dp</dimen>
+    <!-- margin_normal(16) + middle_width_normal_fab(56/2) - middle_width_mini_fab(40/2) -->
+    <dimen name="margin_mini_fab">24dp</dimen>
 
     <!-- Padding -->
     <dimen name="padding_little">8dp</dimen>

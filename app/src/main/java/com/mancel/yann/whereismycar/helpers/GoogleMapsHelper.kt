@@ -112,3 +112,13 @@ fun animateCameraOfGoogleMaps(map: GoogleMap, location: Location) {
     // Camera
     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 }
+
+fun getPolylineFromLocations(locations: List<Location>): List<LatLng> {
+    val result = mutableListOf<LatLng>()
+
+    locations.forEach {
+        result.add(LatLng(it._latitude, it._longitude))
+    }
+
+    return result
+}

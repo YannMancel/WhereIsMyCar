@@ -8,4 +8,9 @@ package com.mancel.yann.whereismycar.models
 data class Location(
     val _latitude: Double,
     val _longitude: Double
-)
+) {
+
+    // METHODS -------------------------------------------------------------------------------------
+
+    fun getLocationToGoogleMapsRequest() = "${this._latitude},${this._longitude}"
+}

@@ -18,4 +18,9 @@ data class POI(
     @ColumnInfo(name = "id") val _id: Long = 0L,
     @ColumnInfo(name = "latitude") val _latitude: Double,
     @ColumnInfo(name = "longitude") val _longitude: Double
-)
+) {
+
+    // METHODS -------------------------------------------------------------------------------------
+
+    fun getLocationToGoogleMapsRequest() = "${this._latitude},${this._longitude}"
+}

@@ -5,15 +5,14 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Color
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.WhereIsMyCarApplication
@@ -21,10 +20,13 @@ import com.mancel.yann.whereismycar.helpers.*
 import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.models.POI
 import com.mancel.yann.whereismycar.states.LocationState
+import com.mancel.yann.whereismycar.states.WayState
 import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 import com.mancel.yann.whereismycar.views.adapters.InfoWindowAdapter
 import com.mancel.yann.whereismycar.views.adapters.OnClickInfoWindowListener
 import kotlinx.android.synthetic.main.fragment_map.view.*
+import java.util.*
+
 
 /**
  * Created by Yann MANCEL on 08/10/2020.
@@ -180,8 +182,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (!::_map.isInitialized || marker == null) return
 
         this._viewModel.updatePointOfInterest(
-            (marker.tag as POI)._id,
-            marker.position.latitude, marker.position.longitude
+            (marker.tag as POI)._id, marker.position.latitude, marker.position.longitude
         )
     }
 
@@ -205,7 +206,9 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
                 val poi = marker.tag as POI
                 val singleItems = this.resources.getStringArray(R.array.way_item)
                 this._viewModel.buildWay(
-                    this._currentLocation, poi, singleItems[this._checkedWayItem]
+                    this._currentLocation.getLocationToGoogleMapsRequest(),
+                    poi.getLocationToGoogleMapsRequest(),
+                    singleItems[this._checkedWayItem].toLowerCase(Locale.getDefault())
                 )
             }
             .show()
@@ -284,7 +287,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     )
     private fun configureLocationEvents() {
         this._viewModel
-            .getLocationState(this.requireContext())
+            .getLocationState()
             .observe(this.viewLifecycleOwner) { locationState ->
                 locationState?.let {
                     this.updateUIWithLocationEvents(it)
@@ -298,6 +301,16 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             .observe(this.viewLifecycleOwner) { pointsOfInterest ->
                 pointsOfInterest?.let {
                     this.updateUIWithPointsOfInterestEvents(it)
+                }
+            }
+    }
+
+    private fun configureWayEvents() {
+        this._viewModel
+            .getWayState()
+            .observe(this.viewLifecycleOwner) { wayState ->
+                wayState?.let {
+                    this.updateUIWithWayEvents(it)
                 }
             }
     }
@@ -356,6 +369,35 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         }
     }
 
+    // -- Way events --
+
+    private fun updateUIWithWayEvents(state: WayState) {
+        when (state) {
+            is WayState.Success -> this.handleWayStateWithSuccess(state)
+            is WayState.Failure -> this.handleWayStateWithFailure(state)
+        }
+    }
+
+    private fun handleWayStateWithSuccess(state: WayState.Success) {
+        if (!::_map.isInitialized) return
+
+        // todo - 20/10/2020 - Keep the reference to remove polyline (see: Polyline.remove())
+        val polyline: Polyline = this._map.addPolyline(
+            PolylineOptions()
+                .addAll(getPolylineFromLocations(state._way))
+                .color(Color.BLUE)
+        )
+
+        // todo - 20/10/2020 - Add action and animation with mini fab
+    }
+
+    private fun handleWayStateWithFailure(state: WayState.Failure) {
+        showMessageWithSnackbar(
+            this._rootView.fragment_map_root,
+            state._exception.message ?: this.getString(R.string.unknown_error)
+        )
+    }
+
     // -- Google Maps --
 
     @SuppressLint("MissingPermission")
@@ -365,6 +407,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (this.hasPermissionToAccessFineLocation()) {
             this.configureLocationEvents()
             this.configurePointsOfInterestEvents()
+            this.configureWayEvents()
             configureStyleOfGoogleMaps(this._map, this@MapFragment)
             configureUiSettingsOfGoogleMaps(this._map)
             this.configureListenersOnGoogleMaps()
@@ -416,15 +459,13 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 //            }
 
         pointsOfInterest.forEach { poi ->
-            // MarkerOptions
-            val marker =
+            this._map.addMarker(
                 MarkerOptions()
                     .position(LatLng(poi._latitude, poi._longitude))
                     .draggable(true)
 //                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
 //                    .anchor(0.5F, 0.5F)
-
-            this._map.addMarker(marker).apply {
+            ).apply {
                 // To identify what is the marker that is dragged by user
                 tag = poi
             }
