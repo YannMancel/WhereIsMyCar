@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.activityViewModels
 import com.google.android.gms.common.api.ResolvableApiException
@@ -26,7 +27,6 @@ import com.mancel.yann.whereismycar.views.adapters.InfoWindowAdapter
 import com.mancel.yann.whereismycar.views.adapters.OnClickInfoWindowListener
 import kotlinx.android.synthetic.main.fragment_map.view.*
 import java.util.*
-
 
 /**
  * Created by Yann MANCEL on 08/10/2020.
@@ -59,6 +59,8 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     private var _checkedWayItem = 1
 
+    private var _polyline: Polyline? = null
+
     // METHODS -------------------------------------------------------------------------------------
 
     // -- BaseFragment --
@@ -66,7 +68,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
     override fun getFragmentLayout(): Int = R.layout.fragment_map
 
     override fun doOnCreateView() {
-        this.configureActionOfFAB()
+        this.configureActionOfFABs()
         this.configureMapFragmentOfGoogleMaps()
     }
 
@@ -244,7 +246,7 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
     // -- Action --
 
-    private fun configureActionOfFAB() {
+    private fun configureActionOfFABs() {
         this._rootView.fragment_map_fab.setOnClickListener {
             if (!::_map.isInitialized || !::_currentLocation.isInitialized)
                 return@setOnClickListener
@@ -255,6 +257,13 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
 
                 // Reset: Camera focus on user
                 this._isLocatedOnUser = true
+            }
+        }
+
+        this._rootView.fragment_map_mini_fab.setOnClickListener {
+            this._viewModel.clearWay()
+            this._rootView.fragment_map_mini_fab.animateWithTranslationYAndEndAction(0F) {
+                visibility = View.GONE
             }
         }
     }
@@ -375,20 +384,26 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         when (state) {
             is WayState.Success -> this.handleWayStateWithSuccess(state)
             is WayState.Failure -> this.handleWayStateWithFailure(state)
+            WayState.Clear -> this.handleWayStateWithClear()
         }
     }
 
     private fun handleWayStateWithSuccess(state: WayState.Success) {
-        if (!::_map.isInitialized) return
+        if (!::_map.isInitialized || state._way.isEmpty()) return
 
-        // todo - 20/10/2020 - Keep the reference to remove polyline (see: Polyline.remove())
-        val polyline: Polyline = this._map.addPolyline(
+        // Polyline
+        this._polyline = this._map.addPolyline(
             PolylineOptions()
                 .addAll(getPolylineFromLocations(state._way))
                 .color(Color.BLUE)
         )
 
-        // todo - 20/10/2020 - Add action and animation with mini fab
+        // Animation of FAB
+        this._rootView.fragment_map_mini_fab.animateWithTranslationYAndStartAction(
+            (-1.0F) * this.resources.getDimension(R.dimen.offset_y)
+        ) {
+            visibility = View.VISIBLE
+        }
     }
 
     private fun handleWayStateWithFailure(state: WayState.Failure) {
@@ -396,6 +411,12 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
             this._rootView.fragment_map_root,
             state._exception.message ?: this.getString(R.string.unknown_error)
         )
+    }
+
+    private fun handleWayStateWithClear() {
+        if (!::_map.isInitialized || this._polyline == null) return
+        this._polyline!!.remove()
+        this._polyline = null
     }
 
     // -- Google Maps --

@@ -38,8 +38,9 @@
         android:layout_margin="@dimen/margin_mini_fab"
         android:src="@drawable/ic_clear"
         android:contentDescription="@null"
+        android:visibility="gone"
         app:layout_anchor="@id/fragment_map_wrapper"
-        app:layout_anchorGravity="bottom|start"
+        app:layout_anchorGravity="bottom|end"
         app:fabSize="mini"
         app:layout_dodgeInsetEdges="bottom"
         style="@style/FloatingActionButtonStyle" />

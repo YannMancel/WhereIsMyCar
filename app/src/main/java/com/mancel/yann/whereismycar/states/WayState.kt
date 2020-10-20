@@ -2,6 +2,7 @@ package com.mancel.yann.whereismycar.states
 
 import com.mancel.yann.whereismycar.models.Location
 import com.mancel.yann.whereismycar.repositories.GoogleWayRepository
+import com.mancel.yann.whereismycar.viewModels.SharedViewModel
 
 /**
  * Created by Yann MANCEL on 19/10/2020.
@@ -25,4 +26,11 @@ sealed class WayState {
      * Why:    Way is a failure
      */
     class Failure(val _exception: Exception) : WayState()
+
+    /**
+     * State:  Clear
+     * Where:  [SharedViewModel.clearWay]
+     * Why:    Way is cleared
+     */
+    object Clear : WayState()
 }

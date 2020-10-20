@@ -1,6 +1,7 @@
 package com.mancel.yann.whereismycar.viewModels
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.*
 import com.mancel.yann.whereismycar.R
 import com.mancel.yann.whereismycar.helpers.logCoroutineOnDebug
@@ -11,6 +12,8 @@ import com.mancel.yann.whereismycar.repositories.WayRepository
 import com.mancel.yann.whereismycar.states.LocationState
 import com.mancel.yann.whereismycar.states.WayState
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -34,7 +37,17 @@ class SharedViewModel(
     private var _locationState: LocationLiveData? = null
 
     private val _pointsOfInterest by lazy {
-        this._databaseRepository.getPointsOfInterest().asLiveData()
+        this._databaseRepository
+            .getPointsOfInterest()
+            .catch { cause ->
+                Log.e(
+                    this@SharedViewModel.javaClass.simpleName,
+                    "Error on database with Flow",
+                    cause
+                )
+            }
+            .flowOn(this._backgroundDispatcher)
+            .asLiveData()
     }
 
     private var _wayState: MutableLiveData<WayState>? = null
@@ -139,4 +152,8 @@ class SharedViewModel(
             this@SharedViewModel._wayState?.postValue(deferredWay.await())
             this@SharedViewModel.logCoroutineOnDebug("Launch finished")
         }
+
+    fun clearWay() {
+        this._wayState?.value = WayState.Clear
+    }
 }
