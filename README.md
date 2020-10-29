@@ -3,6 +3,15 @@
 **Goal**: Create an android application to manage the location of your car with Google Maps.
 
 
+## Phone display
+<p align="middle">
+     <img src="./screenshots/phone_1.png" width="30%" height="30%"> <img src="./screenshots/phone_2.png" width="30%" height="30%">
+</p>
+<p align="middle">
+     <img src="./screenshots/phone_3.png" width="30%" height="30%"> <img src="./screenshots/phone_4.png" width="30%" height="30%">
+</p>
+
+
 ## Requirements
 * Computer (Windows, Mac or Linux)
 * Android Studio

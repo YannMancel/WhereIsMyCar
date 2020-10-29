@@ -469,23 +469,26 @@ class MapFragment : BaseFragment(), OnMapReadyCallback,
         if (!::_map.isInitialized) return
 
         // Remove Markers
+        // todo - 29/10/2020 - If there is a way When you add POI, the way is removed.
         this._map.clear()
 
         // todo - 12/10/2020 - Put in lazy if just on type of POI
-//        val bitmap =
-//            try {
-//                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car)
-//            } catch (e: IllegalArgumentException) {
-//                return
-//            }
+        val bitmap =
+            try {
+                getBitmapFromDrawableResource(this.requireContext(), R.drawable.ic_car_location)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
 
         pointsOfInterest.forEach { poi ->
             this._map.addMarker(
                 MarkerOptions()
                     .position(LatLng(poi._latitude, poi._longitude))
                     .draggable(true)
-//                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-//                    .anchor(0.5F, 0.5F)
+                    .icon(
+                        if (bitmap != null) BitmapDescriptorFactory.fromBitmap(bitmap)
+                        else BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                    )
             ).apply {
                 // To identify what is the marker that is dragged by user
                 tag = poi
